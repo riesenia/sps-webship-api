@@ -1,0 +1,19 @@
+{
+    "name": "riesenia/sps-webship-api",
+    "description": "SPS Webship Api PHP client implementation",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Tomas Saghy",
+            "email": "segy@riesenia.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "Riesenia\\SpsWebship\\": "src/"
+        }
+    }
+}
