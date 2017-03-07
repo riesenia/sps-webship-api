@@ -9,16 +9,19 @@ namespace Riesenia\SpsWebship;
 class Api
 {
     /** @var null|SoapClient */
-    private $soap = null;
+    protected $soap = null;
 
     /** @var null|string */
-    private $username;
+    protected $username;
 
     /** @var null|string */
-    private $password;
+    protected $password;
 
     /** @var string */
-    private $wsdl = 'https://webship.sps-sro.sk/services/WebshipWebService?wsdl';
+    protected $wsdl = 'https://webship.sps-sro.sk/services/WebshipWebService?wsdl';
+
+    /** @var null|string */
+    protected $messages;
 
     /**
      * MyApi constructor
@@ -37,5 +40,83 @@ class Api
         } catch (\Exception $e) {
             throw new \Exception('Failed to build soap client');
         }
+    }
+
+    /**
+     * Call createShipment method
+     *
+     * @param array $shipment
+     * @param integer $shipmentType (0 - print waybills, 1 - pickup order)
+     * @return boolean
+     */
+    public function createShipment(array $shipment, $shipmentType = 0)
+    {
+        $response = $this->soap->createShipment([
+            'name' => $this->username,
+            'password' => $this->password,
+            'webServiceShipment' => $shipment,
+            'webServiceShipmentType' => $shipmentType
+        ]);
+
+        if (isset($response->createShipmentReturn->errors) && $response->createShipmentReturn->errors) {
+            $this->messages = $response->createShipmentReturn->errors;
+            return false;
+        }
+
+        if (isset($response->createShipmentReturn->warnings)) {
+            $this->messages = $response->createShipmentReturn->warnings;
+        }
+
+        return true;
+    }
+
+    /**
+     * Call printShipmentLabels method
+     *
+     * @return string|boolean
+     */
+    public function printShipmentLabels()
+    {
+        $response = $this->soap->printShipmentLabels([
+            'aUserName' => $this->username,
+            'aPassword' => $this->password
+        ]);
+
+        if (isset($response->printShipmentLabelsReturn->errors) && $response->printShipmentLabelsReturn->errors) {
+            $this->messages = $response->printShipmentLabelsReturn->errors;
+            return false;
+        }
+
+        return $response->printShipmentLabelsReturn->documentUrl;
+    }
+
+    /**
+     * Call printEndOfDay method
+     *
+     * @return string|boolean
+     */
+    public function printEndOfDay()
+    {
+        $response = $this->soap->printEndOfDay([
+            'aUserName' => $this->username,
+            'aPassword' => $this->password
+        ]);
+
+        if (isset($response->printEndOfDayReturn->errors) && $response->printEndOfDayReturn->errors) {
+            $this->messages = $response->printEndOfDayReturn->errors;
+            return false;
+        }
+
+        return $response->printEndOfDayReturn->documentUrl;
+    }
+
+    /**
+     * get response messages
+     *
+     * @return string|null
+     */
+    public function getMessages()
+    {
+        return $this->messages;
     }
 }
