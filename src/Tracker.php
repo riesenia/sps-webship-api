@@ -46,13 +46,17 @@ class Tracker
      */
     public function getShipments(string $reference, string $date = ''): array
     {
-        $response = $this->soap->__call('getListOfShipments', [
-            'kundenr' => $this->customer,
-            'verknr' => $reference,
-            'km_mandr' => $this->customerType,
-            'versdat' => $date,
-            'langi' => $this->language
-        ]);
+        try {
+            $response = $this->soap->__call('getListOfShipments', [
+                'kundenr' => $this->customer,
+                'verknr' => $reference,
+                'km_mandr' => $this->customerType,
+                'versdat' => $date,
+                'langi' => $this->language
+            ]);
+        } catch (\SoapFault $e) {
+            return [];
+        }
 
         return (array) $response;
     }
