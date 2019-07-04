@@ -46,7 +46,7 @@ class Tracker
      */
     public function getShipments(string $reference, string $date = ''): array
     {
-        $response = $this->soap->getListOfShipments([
+        $response = $this->soap->__call('getListOfShipments', [
             'kundenr' => $this->customer,
             'verknr' => $reference,
             'km_mandr' => $this->customerType,
