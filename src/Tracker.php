@@ -60,7 +60,7 @@ class Tracker
             return [];
         }
 
-        return $response;
+        return $response ?? [];
     }
 
     /**
@@ -68,9 +68,9 @@ class Tracker
      *
      * @param string $number
      *
-     * @return \stdClass
+     * @return \stdClass|null
      */
-    public function getShipment(string $number): \stdClass
+    public function getShipment(string $number): ?\stdClass
     {
         if (!\preg_match('/([0-9]{3})-([0-9]{3})-([0-9]+)/', $number, $m)) {
             throw new \InvalidArgumentException('Invalid shipment number format!');
@@ -84,7 +84,7 @@ class Tracker
                 'langi' => $this->language
             ]);
         } catch (\SoapFault $e) {
-            return [];
+            return null;
         }
 
         return $response;
