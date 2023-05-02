@@ -70,22 +70,36 @@ class Api
     /**
      * Call printShipmentLabels method.
      *
+     * @param array $options
+     *
      * @return string
      */
-    public function printShipmentLabels(): string
+    public function printShipmentLabels(array $options = []): string
     {
-        $response = $this->soap->printShipmentLabels([
-            'aUserName' => $this->username,
-            'aPassword' => $this->password
-        ]);
+        if (!$options) {
+            $response = $this->soap->printShipmentLabels([
+                'aUserName' => $this->username,
+                'aPassword' => $this->password
+            ]);
 
-        if (isset($response->printShipmentLabelsReturn->errors) && $response->printShipmentLabelsReturn->errors) {
-            $this->messages = (string) $response->printShipmentLabelsReturn->errors;
+            $returnKey = 'printShipmentLabelsReturn';
+        } else {
+            $response = $this->soap->printLabelsWithSettings([
+                'aUserName' => $this->username,
+                'aPassword' => $this->password,
+                'aPrintingSettings' => $options
+            ]);
+
+            $returnKey = 'printLabelsWithSettingsReturn';
+        }
+
+        if (isset($response->{$returnKey}->errors) && $response->{$returnKey}->errors) {
+            $this->messages = (string) $response->{$returnKey}->errors;
 
             return '';
         }
 
-        return $response->printShipmentLabelsReturn->documentUrl;
+        return $response->{$returnKey}->documentUrl;
     }
 
     /**
