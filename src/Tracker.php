@@ -20,6 +20,8 @@ class Tracker
     /** @var string */
     protected $wsdl = 'http://t-t.sps-sro.sk/service_soap.php?wsdl';
 
+    protected \SoapClient $soap;
+
     /**
      * Constructor.
      *
@@ -45,15 +47,13 @@ class Tracker
      */
     public function getStatusHistory(string $number): array
     {
-        if (!\preg_match('/([0-9]{3})-([0-9]{3})-([0-9]+)/', $number, $m)) {
+        if (!($shipmentNumber = $this->parseShipmentNumber($number))) {
             throw new \InvalidArgumentException('Invalid shipment number format!');
         }
 
         try {
             $response = $this->soap->__call('getParcelStatus', [
-                'landnr' => $m[1],
-                'mandnr' => $m[2],
-                'lfdnr' => $m[3],
+                ...$shipmentNumber,
                 'langi' => $this->language
             ]);
         } catch (\SoapFault $e) {
@@ -72,15 +72,13 @@ class Tracker
      */
     public function getShipment(string $number): ?\stdClass
     {
-        if (!\preg_match('/([0-9]{3})-([0-9]{3})-([0-9]+)/', $number, $m)) {
+        if (!($shipmentNumber = $this->parseShipmentNumber($number))) {
             throw new \InvalidArgumentException('Invalid shipment number format!');
         }
 
         try {
             $response = $this->soap->__call('getShipment', [
-                'landnr' => $m[1],
-                'mandnr' => $m[2],
-                'lfdnr' => $m[3],
+                ...$shipmentNumber,
                 'langi' => $this->language
             ]);
         } catch (\SoapFault $e) {
@@ -113,5 +111,37 @@ class Tracker
         }
 
         return (array) $response;
+    }
+
+    /**
+     * Parse shipment number.
+     * 
+     * @param string $number
+     * 
+     * @return null|array {
+     *   landnr: string,
+     *   mandnr: string,
+     *   lfdnr: string
+     * }
+     */
+    protected function parseShipmentNumber(string $number): ?array
+    {  
+        if (\preg_match('/[0-9]+/', $number)) {
+            return [
+                'landnr' => '',
+                'mandnr' => '',
+                'lfdnr' => $number
+            ];
+        }
+
+        if (\preg_match('/([0-9]{3})-([0-9]{3})-([0-9]+)/', $number, $m)) {
+            return [
+                'landnr' => $m[1],
+                'mandnr' => $m[2],
+                'lfdnr' => $m[3]
+            ];
+        }
+
+        return null;
     }
 }
